@@ -1,2 +1,18 @@
 /devlog-next/node_modules
 devlog-next/package-lock.json
+
+# Next.js build output
+devlog-next/.next/
+devlog-next/out/
+
+# Environment variables (contains Supabase keys & API keys — never commit)
+devlog-next/.env
+devlog-next/.env.local
+devlog-next/.env*.local
+
+# Supabase local dev
+devlog-next/.supabase/
+
+# OS files
+.DS_Store
+Thumbs.db
