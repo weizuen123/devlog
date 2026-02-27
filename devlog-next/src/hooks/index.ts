@@ -1,8 +1,8 @@
 /**
  * Custom React hooks for state management.
  * ────────────────────────────────────────────
- * useEntries() — manages task entries (CRUD + persistence)
- * useSettings() — manages user settings (load/save)
+ * useEntries() — manages task entries (CRUD + Supabase persistence)
+ * useSettings() — manages user settings (localStorage)
  * useToast() — simple toast notification system
  */
 
@@ -12,11 +12,13 @@ import { useState, useEffect, useCallback } from "react";
 import { Entry, Settings } from "@/types";
 import {
   loadEntries,
-  saveEntries,
+  addEntry as addEntryDB,
+  updateEntryDB,
+  deleteEntryDB,
+  replaceAllEntries,
   loadSettings,
   saveSettings as saveSettingsLS,
   getDefaultSettings,
-  clearAllData,
 } from "@/lib/storage";
 
 // ── Entries Hook ──
@@ -25,44 +27,33 @@ export function useEntries() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loaded, setLoaded] = useState(false);
 
-  // Load from localStorage on mount
   useEffect(() => {
-    setEntries(loadEntries());
-    setLoaded(true);
+    loadEntries()
+      .then((data) => {
+        setEntries(data);
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
   }, []);
 
-  const addEntry = useCallback(
-    (entry: Entry) => {
-      const updated = [...entries, entry];
-      setEntries(updated);
-      saveEntries(updated);
-    },
-    [entries]
-  );
+  const addEntry = useCallback(async (entry: Entry) => {
+    await addEntryDB(entry);
+    setEntries((prev) => [...prev, entry]);
+  }, []);
 
-  const updateEntry = useCallback(
-    (id: string, data: Partial<Entry>) => {
-      const updated = entries.map((e) =>
-        e.id === id ? { ...e, ...data } : e
-      );
-      setEntries(updated);
-      saveEntries(updated);
-    },
-    [entries]
-  );
+  const updateEntry = useCallback(async (id: string, data: Partial<Entry>) => {
+    await updateEntryDB(id, data);
+    setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, ...data } : e)));
+  }, []);
 
-  const deleteEntry = useCallback(
-    (id: string) => {
-      const updated = entries.filter((e) => e.id !== id);
-      setEntries(updated);
-      saveEntries(updated);
-    },
-    [entries]
-  );
+  const deleteEntry = useCallback(async (id: string) => {
+    await deleteEntryDB(id);
+    setEntries((prev) => prev.filter((e) => e.id !== id));
+  }, []);
 
-  const setAllEntries = useCallback((newEntries: Entry[]) => {
+  const setAllEntries = useCallback(async (newEntries: Entry[]) => {
+    await replaceAllEntries(newEntries);
     setEntries(newEntries);
-    saveEntries(newEntries);
   }, []);
 
   return {

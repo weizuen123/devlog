@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Entry } from "@/types";
 import { useEntries, useSettings, useToast } from "@/hooks";
-import { getDefaultSettings } from "@/lib/storage";
-import { clearAllData, saveEntries } from "@/lib/storage";
+import { getDefaultSettings, clearAllEntries } from "@/lib/storage";
+import { useAuth } from "@/context/AuthContext";
 
 import Header from "@/components/Header";
 import EntryForm from "@/components/EntryForm";
@@ -17,6 +18,8 @@ import Toast from "@/components/Toast";
 import { Search } from "lucide-react";
 
 export default function HomePage() {
+  const router = useRouter();
+  const { user, loading: authLoading, signOut } = useAuth();
   const { entries, loaded, addEntry, updateEntry, deleteEntry, setAllEntries } =
     useEntries();
   const { settings, updateSettings } = useSettings();
@@ -32,8 +35,14 @@ export default function HomePage() {
     "settings" | "compile" | "data" | null
   >(null);
 
-  // Loading state
-  if (!loaded) {
+  // Auth guard
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [authLoading, user, router]);
+
+  if (authLoading || !user || !loaded) {
     return (
       <div className="min-h-screen flex items-center justify-center text-text-muted">
         Loading DevLog...
@@ -50,6 +59,10 @@ export default function HomePage() {
         onOpenSettings={() => setModal("settings")}
         onOpenData={() => setModal("data")}
         onOpenCompile={() => setModal("compile")}
+        onSignOut={async () => {
+          await signOut();
+          router.replace("/login");
+        }}
       />
 
       <main className="max-w-[820px] mx-auto px-5 pt-6 pb-16">
@@ -138,9 +151,9 @@ export default function HomePage() {
         entries={entries}
         settings={settings}
         onEntriesChange={setAllEntries}
-        onClearAll={() => {
-          clearAllData();
-          setAllEntries([]);
+        onClearAll={async () => {
+          await clearAllEntries();
+          await setAllEntries([]);
           updateSettings(getDefaultSettings());
         }}
         showToast={showToast}

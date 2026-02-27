@@ -2,7 +2,6 @@
 
 import { useRef } from "react";
 import { Entry, Settings } from "@/types";
-import { clearAllData } from "@/lib/storage";
 import { exportBackup, importBackup } from "@/lib/export-import";
 import { Download, Upload, Trash2, Info } from "lucide-react";
 import Modal from "./Modal";

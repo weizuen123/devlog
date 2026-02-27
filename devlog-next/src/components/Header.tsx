@@ -1,9 +1,8 @@
 "use client";
 
-import { Settings } from "@/types";
 import { getYear } from "@/lib/date";
 import { Entry } from "@/types";
-import { Save, Settings as SettingsIcon, Bot } from "lucide-react";
+import { Save, Settings as SettingsIcon, Bot, LogOut } from "lucide-react";
 
 interface HeaderProps {
   entries: Entry[];
@@ -12,6 +11,7 @@ interface HeaderProps {
   onOpenSettings: () => void;
   onOpenData: () => void;
   onOpenCompile: () => void;
+  onSignOut: () => void;
 }
 
 export default function Header({
@@ -21,6 +21,7 @@ export default function Header({
   onOpenSettings,
   onOpenData,
   onOpenCompile,
+  onSignOut,
 }: HeaderProps) {
   const years = [
     ...new Set(entries.map((e) => getYear(e.date))),
@@ -74,6 +75,14 @@ export default function Header({
           >
             <Bot size={15} />
             Compile
+          </button>
+
+          <button
+            onClick={onSignOut}
+            className="bg-card border border-border rounded-lg px-3 py-1.5 text-text-secondary hover:text-text-primary hover:border-border-hover transition-colors"
+            title="Sign out"
+          >
+            <LogOut size={16} />
           </button>
         </div>
       </div>

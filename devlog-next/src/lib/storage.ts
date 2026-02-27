@@ -1,44 +1,76 @@
 /**
- * Storage service — localStorage wrapper.
+ * Storage service.
  * ────────────────────────────────────────────
- * All data persistence goes through here.
- * When you add Supabase later, you'll swap these
- * implementations without touching any components.
- *
- * HOW localStorage WORKS:
- * ┌──────────────────────────────────────────────┐
- * │ • Key-value store built into the browser      │
- * │ • Data stored as strings (we JSON.stringify)  │
- * │ • Persists across restarts (~5-10 MB limit)   │
- * │ • NOT synced across devices or browsers       │
- * │ • Lost if user clears browser data            │
- * └──────────────────────────────────────────────┘
+ * Entries  → Supabase (per-user, synced across devices)
+ * Settings → localStorage (device-local; includes sensitive apiKey)
  */
 
 import { Entry, Settings } from "@/types";
 import { STORAGE_KEYS } from "@/lib/constants";
+import { supabase } from "@/lib/supabase";
 
-// ── Entries ──
+// ── Entries (Supabase) ──
 
-export function loadEntries(): Entry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.ENTRIES);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
+export async function loadEntries(): Promise<Entry[]> {
+  const { data, error } = await supabase
+    .from("entries")
+    .select("id, task, category, date")
+    .order("date", { ascending: false });
+  if (error) throw error;
+  return data as Entry[];
+}
+
+export async function addEntry(entry: Entry): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { error } = await supabase.from("entries").insert({
+    id: entry.id,
+    user_id: user!.id,
+    task: entry.task,
+    category: entry.category,
+    date: entry.date,
+  });
+  if (error) throw error;
+}
+
+export async function updateEntryDB(
+  id: string,
+  data: Partial<Entry>
+): Promise<void> {
+  const { error } = await supabase.from("entries").update(data).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteEntryDB(id: string): Promise<void> {
+  const { error } = await supabase.from("entries").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function replaceAllEntries(entries: Entry[]): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  await supabase.from("entries").delete().eq("user_id", user!.id);
+  if (entries.length > 0) {
+    const rows = entries.map((e) => ({ ...e, user_id: user!.id }));
+    const { error } = await supabase.from("entries").insert(rows);
+    if (error) throw error;
   }
 }
 
-export function saveEntries(entries: Entry[]): void {
-  try {
-    localStorage.setItem(STORAGE_KEYS.ENTRIES, JSON.stringify(entries));
-  } catch (e) {
-    console.error("Failed to save entries:", e);
-  }
+export async function clearAllEntries(): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { error } = await supabase
+    .from("entries")
+    .delete()
+    .eq("user_id", user!.id);
+  if (error) throw error;
 }
 
-// ── Settings ──
+// ── Settings (localStorage) ──
 
 export function getDefaultSettings(): Settings {
   return {
@@ -68,11 +100,4 @@ export function saveSettings(settings: Settings): void {
   } catch (e) {
     console.error("Failed to save settings:", e);
   }
-}
-
-// ── Danger zone ──
-
-export function clearAllData(): void {
-  localStorage.removeItem(STORAGE_KEYS.ENTRIES);
-  localStorage.removeItem(STORAGE_KEYS.SETTINGS);
 }
