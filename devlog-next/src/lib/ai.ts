@@ -1,62 +1,16 @@
 /**
- * AI Service — Anthropic API integration.
- * ────────────────────────────────────────────
- * Builds the evaluation prompt and calls Claude.
- * Edit buildPrompt() to customize the evaluation format.
+ * Evaluation compiler — template-based, no AI required.
+ * Groups entries by KPI category and formats a self-assessment.
  */
 
-import { Entry, Settings, Category } from "@/types";
-import { CATEGORIES, VALUES, AI_CONFIG } from "@/lib/constants";
+import { Entry, Settings } from "@/types";
+import { CATEGORIES, VALUES } from "@/lib/constants";
 
-function buildPrompt(entries: Entry[], settings: Settings, year: string): string {
-  const grouped: Record<string, Entry[]> = {};
-  CATEGORIES.forEach((c) => (grouped[c.id] = []));
-  entries.forEach((e) => {
-    if (grouped[e.category]) grouped[e.category].push(e);
-  });
-
-  const summary = CATEGORIES.map((c) => {
-    if (grouped[c.id].length === 0) return null;
-    const items = grouped[c.id]
-      .map((e) => `- [${e.date}] ${e.task}`)
-      .join("\n");
-    return `## ${c.label} (${c.weight}%)\n${items}`;
-  })
-    .filter(Boolean)
-    .join("\n\n");
-
-  return `You are helping a software developer compile their year-end performance evaluation. Below are their daily task logs organized by KPI category for the year ${year}.
-
-Employee: ${settings.name || "N/A"}
-Designation: ${settings.designation || "N/A"}
-Department: ${settings.department || "N/A"}
-
-The performance evaluation has these KPI categories (QUANTITATIVE, weighted):
-${CATEGORIES.filter((c) => c.weight > 0)
-  .map((c, i) => `${i + 1}. **${c.label} (${c.weight}%)** — ${c.desc}`)
-  .join("\n")}
-
-And QUALITATIVE values (each 20%): ${VALUES.join(", ")}
-
-Scoring guide:
-- 1 = Not meeting expectation
-- 2 = Could be doing more
-- 3 = Meeting expectation
-- 4 = Exceeding expectation
-- 5 = Outstanding
-
-Here are the daily task logs:
-
-${summary}
-
-Please compile this into a well-structured performance evaluation self-assessment. For each KPI category:
-1. Write a brief paragraph summarizing achievements
-2. List key accomplishments as bullet points (combine similar tasks, highlight impact)
-3. Suggest a self-assessment score (1-5) with justification
-
-Then for the Values section, based on the work patterns observed, suggest how the employee demonstrated each value.
-
-Format the output as clean text suitable for pasting into a performance evaluation form. Be specific, use numbers where possible (e.g., "Completed X features", "Resolved Y bugs"), and emphasize impact.`;
+function suggestScore(count: number): string {
+  if (count === 0) return "N/A";
+  if (count <= 2) return "3 — Meeting expectation";
+  if (count <= 6) return "4 — Exceeding expectation";
+  return "5 — Outstanding";
 }
 
 export async function compileEvaluation(
@@ -64,26 +18,70 @@ export async function compileEvaluation(
   settings: Settings,
   year: string
 ): Promise<string> {
-  if (!settings.apiKey) {
-    throw new Error("API key is required. Set it in Settings.");
-  }
   if (entries.length === 0) {
     throw new Error(`No entries found for ${year}.`);
   }
 
-  const prompt = buildPrompt(entries, settings, year);
-
-  const response = await fetch("/api/compile", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt, apiKey: settings.apiKey }),
+  const grouped: Record<string, Entry[]> = {};
+  CATEGORIES.forEach((c) => (grouped[c.id] = []));
+  entries.forEach((e) => {
+    if (grouped[e.category]) grouped[e.category].push(e);
   });
 
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.error || `API error (${response.status})`);
+  const lines: string[] = [];
+
+  // KPI sections
+  for (const cat of CATEGORIES) {
+    const catEntries = grouped[cat.id];
+    if (cat.weight === 0 && catEntries.length === 0) continue;
+
+    const weightLabel = cat.weight > 0 ? ` (${cat.weight}%)` : "";
+    lines.push(`${"─".repeat(56)}`);
+    lines.push(`${cat.icon}  ${cat.label.toUpperCase()}${weightLabel}`);
+    lines.push("");
+
+    if (catEntries.length === 0) {
+      lines.push("  No entries recorded for this category.");
+    } else {
+      lines.push(`  Total activities: ${catEntries.length}`);
+      lines.push("");
+      for (const e of catEntries) {
+        lines.push(`  • [${e.date}] ${e.task}`);
+      }
+      if (cat.weight > 0) {
+        lines.push("");
+        lines.push(`  Suggested score : ${suggestScore(catEntries.length)}`);
+      }
+    }
+    lines.push("");
   }
 
-  const data = await response.json();
-  return data.text;
+  // Values section
+  lines.push(`${"─".repeat(56)}`);
+  lines.push(`🌟  VALUES ASSESSMENT`);
+  lines.push("");
+  for (const value of VALUES) {
+    lines.push(`  ${value}`);
+    lines.push(`  ${"·".repeat(40)}`);
+    lines.push("");
+  }
+
+  // Summary
+  const scored = CATEGORIES.filter((c) => c.weight > 0);
+  lines.push(`${"─".repeat(56)}`);
+  lines.push(`📊  SUMMARY`);
+  lines.push("");
+  lines.push(`  Employee   : ${settings.name || "N/A"}`);
+  lines.push(`  Department : ${settings.department || "N/A"}`);
+  lines.push(`  Year       : ${year}`);
+  lines.push(`  Total logs : ${entries.length} entries`);
+  lines.push("");
+  for (const cat of scored) {
+    const count = grouped[cat.id].length;
+    lines.push(
+      `  ${cat.short.padEnd(12)}: ${count} entries → ${suggestScore(count)}`
+    );
+  }
+
+  return lines.join("\n");
 }

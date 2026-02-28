@@ -44,7 +44,7 @@ export default function EntryForm({
       });
     } else {
       onAdd({
-        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+        id: crypto.randomUUID(),
         task: task.trim(),
         category,
         date,

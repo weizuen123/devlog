@@ -85,14 +85,22 @@ export default function HomePage() {
 
         <EntryForm
           editEntry={editEntry}
-          onAdd={(entry) => {
-            addEntry(entry);
-            showToast("Task saved ✓");
+          onAdd={async (entry) => {
+            try {
+              await addEntry(entry);
+              showToast("Task saved ✓");
+            } catch {
+              showToast("Failed to save task");
+            }
           }}
-          onUpdate={(id, data) => {
-            updateEntry(id, data);
-            setEditEntry(null);
-            showToast("Task updated ✓");
+          onUpdate={async (id, data) => {
+            try {
+              await updateEntry(id, data);
+              setEditEntry(null);
+              showToast("Task updated ✓");
+            } catch {
+              showToast("Failed to update task");
+            }
           }}
           onCancelEdit={() => setEditEntry(null)}
         />
@@ -118,9 +126,13 @@ export default function HomePage() {
           filterYear={filterYear}
           search={search}
           onEdit={setEditEntry}
-          onDelete={(id) => {
-            deleteEntry(id);
-            showToast("Task deleted");
+          onDelete={async (id) => {
+            try {
+              await deleteEntry(id);
+              showToast("Task deleted");
+            } catch {
+              showToast("Failed to delete task");
+            }
           }}
         />
       </main>

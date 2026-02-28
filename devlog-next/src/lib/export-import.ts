@@ -5,17 +5,50 @@
 import { Entry, Settings } from "@/types";
 
 export function exportBackup(entries: Entry[], settings: Settings): void {
-  const data = {
-    app: "devlog",
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    entries,
-    settings: { ...settings, apiKey: "" },
-  };
+  const today = new Date().toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+
+  const grouped: Record<string, Entry[]> = {};
+  for (const entry of [...entries].sort((a, b) =>
+    b.date.localeCompare(a.date)
+  )) {
+    if (!grouped[entry.date]) grouped[entry.date] = [];
+    grouped[entry.date].push(entry);
+  }
+
+  const lines: string[] = [
+    `DEVLOG EXPORT`,
+    `Employee  : ${settings.name || "N/A"}`,
+    `Department: ${settings.department || "N/A"}`,
+    `Exported  : ${today}`,
+    `Total     : ${entries.length} entries`,
+    "═".repeat(52),
+    "",
+  ];
+
+  for (const [date, dayEntries] of Object.entries(grouped)) {
+    const label = new Date(date + "T00:00:00").toLocaleDateString("en-GB", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+    lines.push(`── ${label} ──`);
+    for (const e of dayEntries) {
+      const cat = e.category.charAt(0).toUpperCase() + e.category.slice(1);
+      lines.push(`  [${cat}] ${e.task}`);
+    }
+    lines.push("");
+  }
+
+  const safeName = (settings.name || "devlog").replace(/\s+/g, "_");
   downloadFile(
-    JSON.stringify(data, null, 2),
-    `devlog_backup_${new Date().toISOString().split("T")[0]}.json`,
-    "application/json"
+    lines.join("\n"),
+    `devlog_${safeName}_${new Date().toISOString().split("T")[0]}.txt`,
+    "text/plain"
   );
 }
 

@@ -78,14 +78,14 @@ export default function DataModal({
           Export
         </label>
         <p className="text-sm text-text-secondary mb-2.5">
-          Download all {entries.length} entries as a JSON file.
+          Download all {entries.length} entries as a text file.
         </p>
         <button
           onClick={handleExport}
           className="bg-accent-green rounded-lg px-4 py-2 text-sm text-white font-semibold flex items-center gap-1.5 hover:brightness-110 transition-all"
         >
           <Download size={14} />
-          Export Backup (.json)
+          Export Backup (.txt)
         </button>
       </div>
 
@@ -102,7 +102,7 @@ export default function DataModal({
         <input
           ref={fileRef}
           type="file"
-          accept=".json"
+          accept=".txt"
           onChange={handleImport}
           className="hidden"
         />
@@ -111,7 +111,7 @@ export default function DataModal({
           className="bg-card border border-border rounded-lg px-4 py-2 text-sm text-text-secondary flex items-center gap-1.5 hover:text-text-primary hover:border-border-hover transition-colors"
         >
           <Upload size={14} />
-          Import Backup (.json)
+          Import Backup (.txt)
         </button>
       </div>
 

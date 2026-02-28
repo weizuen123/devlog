@@ -84,7 +84,7 @@ export default function CompileModal({
     <Modal
       open={open}
       onClose={handleClose}
-      title="🤖 AI Performance Compiler"
+      title="📋 Performance Compiler"
       subtitle="Compile daily logs into evaluation format"
       size="lg"
       footer={
@@ -143,7 +143,7 @@ export default function CompileModal({
 
           <div className="bg-card border border-border rounded-xl p-4 mb-4">
             <p className="text-sm text-text-secondary leading-relaxed">
-              AI will analyze your task logs and organize them into the
+              Your task logs will be organized into the
               LintraMax Performance Evaluation format:
             </p>
             <ul className="mt-2 pl-5 text-sm text-text-secondary leading-loose list-disc">
@@ -153,13 +153,6 @@ export default function CompileModal({
             </ul>
           </div>
 
-          {!settings.apiKey && (
-            <div className="bg-[#78350f33] border border-[#f59e0b44] rounded-lg px-4 py-3 text-sm text-amber-300 mb-4 flex items-center gap-2.5">
-              <span>🔑</span>
-              <span>API key required. Set it in Settings first.</span>
-            </div>
-          )}
-
           {error && (
             <div className="bg-[#7f1d1d33] border border-[#7f1d1d] rounded-lg px-4 py-3 text-sm text-red-300 mb-4">
               {error}
@@ -168,15 +161,14 @@ export default function CompileModal({
 
           <button
             onClick={handleCompile}
-            disabled={!settings.apiKey}
+            disabled={yearEntries.length === 0}
             className="w-full bg-gradient-to-r from-accent-blue to-accent-purple rounded-lg py-3.5 text-[15px] text-white font-semibold hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            🚀 Compile with AI
+            📋 Compile Evaluation
           </button>
 
           <p className="text-center text-[11px] text-text-muted mt-3">
-            Uses Claude Sonnet via Anthropic API • ~$0.01-0.05 per
-            compilation
+            Auto-formats your logs into evaluation format • No API key needed
           </p>
         </>
       )}
@@ -185,13 +177,10 @@ export default function CompileModal({
       {state === "loading" && (
         <div className="text-center py-14">
           <div className="text-[42px] mb-4 animate-spin-slow inline-block">
-            🤖
+            📋
           </div>
           <p className="text-text-secondary text-[15px]">
-            Analyzing your task logs...
-          </p>
-          <p className="text-text-muted text-sm mt-1">
-            This may take 15-30 seconds
+            Compiling your evaluation...
           </p>
         </div>
       )}
