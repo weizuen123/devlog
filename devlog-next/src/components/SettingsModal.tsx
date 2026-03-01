@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Settings } from "@/types";
-import { Eye, EyeOff } from "lucide-react";
 import Modal from "./Modal";
 
 interface SettingsModalProps {
@@ -19,14 +18,6 @@ export default function SettingsModal({
   onSave,
 }: SettingsModalProps) {
   const [local, setLocal] = useState<Settings>({ ...settings });
-  const [showKey, setShowKey] = useState(false);
-
-  // Reset local state when modal opens
-  const handleOpen = () => setLocal({ ...settings });
-
-  if (open && local.name !== settings.name && local.apiKey === "") {
-    // Sync when reopened
-  }
 
   const handleSave = () => {
     onSave(local);
@@ -41,7 +32,7 @@ export default function SettingsModal({
       open={open}
       onClose={onClose}
       title="⚙️ Settings"
-      subtitle="Your info and API key"
+      subtitle="Your info"
       footer={
         <>
           <button
@@ -82,41 +73,6 @@ export default function SettingsModal({
         </div>
       ))}
 
-      {/* API Key */}
-      <hr className="border-border my-5" />
-      <div className="mb-2">
-        <label className="block text-xs text-text-secondary mb-1 font-medium">
-          🔑 Anthropic API Key
-        </label>
-        <div className="flex gap-2">
-          <input
-            type={showKey ? "text" : "password"}
-            value={local.apiKey}
-            onChange={(e) => set("apiKey", e.target.value)}
-            placeholder="sk-ant-api03-..."
-            className="flex-1 bg-input border border-border rounded-lg px-3.5 py-2.5 text-sm text-text-primary outline-none focus:border-accent-blue"
-          />
-          <button
-            onClick={() => setShowKey(!showKey)}
-            className="bg-card border border-border rounded-lg px-3 text-text-secondary hover:text-text-primary transition-colors"
-          >
-            {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
-          </button>
-        </div>
-        <p className="text-[11px] text-text-muted mt-1.5 leading-relaxed">
-          Get your key from{" "}
-          <a
-            href="https://console.anthropic.com/settings/keys"
-            target="_blank"
-            className="text-accent-blue hover:underline"
-          >
-            console.anthropic.com
-          </a>
-          .<br />
-          Stored only in your browser. Sent only to Anthropic&apos;s API via
-          your server.
-        </p>
-      </div>
     </Modal>
   );
 }

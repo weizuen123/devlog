@@ -71,7 +71,7 @@ export default function HomePage() {
           <div className="bg-[#78350f33] border border-[#f59e0b44] rounded-lg px-4 py-3 text-sm text-amber-300 mb-5 flex items-center gap-2.5">
             <span>👋</span>
             <span>
-              Set your name and API key in{" "}
+              Set your name in{" "}
               <button
                 onClick={() => setModal("settings")}
                 className="text-accent-amber underline"
