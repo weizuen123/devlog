@@ -66,9 +66,8 @@ export default function DataModal({
       <div className="bg-[#1e3a5f33] border border-[#3b82f644] rounded-lg px-4 py-3 text-sm text-blue-300 mb-5 flex items-start gap-2.5">
         <Info size={16} className="shrink-0 mt-0.5" />
         <span>
-          Data is stored in your browser&apos;s <strong>localStorage</strong>.
-          It stays on this device and browser only. Export regularly to keep a
-          backup!
+          Data is stored <strong>online</strong> and synced to your account.
+          Export regularly to keep a local backup.
         </span>
       </div>
 

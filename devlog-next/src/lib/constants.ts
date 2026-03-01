@@ -45,6 +45,15 @@ export const CATEGORIES: Category[] = [
     desc: "Participation in discussions, helping others, communication",
   },
   {
+    id: "leadership",
+    label: "Leadership / Developing Others",
+    short: "Leadership",
+    color: "#ec4899",
+    icon: "🌱",
+    weight: 0,
+    desc: "Mentoring, coaching, and developing team members",
+  },
+  {
     id: "other",
     label: "Other / General",
     short: "Other",
