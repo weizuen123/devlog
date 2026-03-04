@@ -162,7 +162,6 @@ export default function HomePage() {
         onClose={() => setModal(null)}
         entries={entries}
         settings={settings}
-        onEntriesChange={setAllEntries}
         onClearAll={async () => {
           await clearAllEntries();
           await setAllEntries([]);

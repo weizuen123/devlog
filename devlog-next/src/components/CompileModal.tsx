@@ -147,9 +147,9 @@ export default function CompileModal({
               LintraMax Performance Evaluation format:
             </p>
             <ul className="mt-2 pl-5 text-sm text-text-secondary leading-loose list-disc">
-              <li>KPI summaries with suggested scores (1-5)</li>
+              <li>KPI summaries with activity counts</li>
               <li>Key accomplishments as bullet points</li>
-              <li>Values assessment based on work patterns</li>
+              <li>Values assessment section</li>
             </ul>
           </div>
 

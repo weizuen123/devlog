@@ -6,13 +6,6 @@
 import { Entry, Settings } from "@/types";
 import { CATEGORIES, VALUES } from "@/lib/constants";
 
-function suggestScore(count: number): string {
-  if (count === 0) return "N/A";
-  if (count <= 2) return "3 — Meeting expectation";
-  if (count <= 6) return "4 — Exceeding expectation";
-  return "5 — Outstanding";
-}
-
 export async function compileEvaluation(
   entries: Entry[],
   settings: Settings,
@@ -50,7 +43,7 @@ export async function compileEvaluation(
       }
       if (cat.weight > 0) {
         lines.push("");
-        lines.push(`  Suggested score : ${suggestScore(catEntries.length)}`);
+  
       }
     }
     lines.push("");
@@ -78,9 +71,7 @@ export async function compileEvaluation(
   lines.push("");
   for (const cat of scored) {
     const count = grouped[cat.id].length;
-    lines.push(
-      `  ${cat.short.padEnd(12)}: ${count} entries → ${suggestScore(count)}`
-    );
+    lines.push(`  ${cat.short.padEnd(12)}: ${count} entries`);
   }
 
   return lines.join("\n");

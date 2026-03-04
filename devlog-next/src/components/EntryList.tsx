@@ -72,13 +72,16 @@ export default function EntryList({
               <div className="text-xs text-text-muted mb-1.5 font-medium">
                 {prettyDate(date)}
               </div>
-              {items.map((entry) => {
+              {items.map((entry, idx) => {
                 const cat = getCat(entry.category);
                 return (
                   <div
                     key={entry.id}
                     className="flex items-start gap-3 py-2.5 border-b border-[#12122a]"
                   >
+                    <span className="text-xs text-text-muted mt-0.5 shrink-0 w-5 text-right">
+                      {idx + 1})
+                    </span>
                     <span
                       className="text-[10px] font-semibold px-2 py-1 rounded-md whitespace-nowrap mt-0.5 shrink-0"
                       style={{
