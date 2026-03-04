@@ -16,6 +16,7 @@ export type CategoryId =
   | "quality"
   | "throughput"
   | "collaboration"
+  | "leadership"
   | "other";
 
 /** KPI category definition. */
