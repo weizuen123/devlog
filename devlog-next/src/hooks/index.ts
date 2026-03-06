@@ -9,7 +9,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Entry, Settings } from "@/types";
+import { Entry, Settings, TodoItem } from "@/types";
 import {
   loadEntries,
   addEntry as addEntryDB,
@@ -81,6 +81,63 @@ export function useSettings() {
   }, []);
 
   return { settings, updateSettings };
+}
+
+// ── Todos Hook ──
+
+const TODOS_KEY = "devlog-todos";
+
+export function useTodos() {
+  const [todos, setTodos] = useState<TodoItem[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(TODOS_KEY);
+      if (raw) setTodos(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  const save = (items: TodoItem[]) => {
+    setTodos(items);
+    localStorage.setItem(TODOS_KEY, JSON.stringify(items));
+  };
+
+  const addTodo = useCallback((text: string) => {
+    setTodos((prev) => {
+      const next = [
+        ...prev,
+        { id: crypto.randomUUID(), text, done: false, createdAt: new Date().toISOString() },
+      ];
+      localStorage.setItem(TODOS_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const toggleTodo = useCallback((id: string) => {
+    setTodos((prev) => {
+      const next = prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t));
+      localStorage.setItem(TODOS_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const deleteTodo = useCallback((id: string) => {
+    setTodos((prev) => {
+      const next = prev.filter((t) => t.id !== id);
+      localStorage.setItem(TODOS_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const clearDone = useCallback(() => {
+    setTodos((prev) => {
+      const next = prev.filter((t) => !t.done);
+      localStorage.setItem(TODOS_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  return { todos, addTodo, toggleTodo, deleteTodo, clearDone };
 }
 
 // ── Toast Hook ──

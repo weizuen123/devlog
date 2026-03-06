@@ -41,3 +41,11 @@ export interface Settings {
 
 /** AI compilation state. */
 export type CompileState = "idle" | "loading" | "done";
+
+/** A single to-do item (stored in localStorage). */
+export interface TodoItem {
+  id: string;
+  text: string;
+  done: boolean;
+  createdAt: string; // ISO timestamp
+}

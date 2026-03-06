@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Entry } from "@/types";
-import { useEntries, useSettings, useToast } from "@/hooks";
+import { useEntries, useSettings, useToast, useTodos } from "@/hooks";
 import { getDefaultSettings, clearAllEntries } from "@/lib/storage";
 import { useAuth } from "@/context/AuthContext";
 
@@ -15,6 +15,7 @@ import SettingsModal from "@/components/SettingsModal";
 import CompileModal from "@/components/CompileModal";
 import DataModal from "@/components/DataModal";
 import Toast from "@/components/Toast";
+import TodoPanel from "@/components/TodoPanel";
 import { Search } from "lucide-react";
 
 export default function HomePage() {
@@ -24,6 +25,7 @@ export default function HomePage() {
     useEntries();
   const { settings, updateSettings } = useSettings();
   const { toast, showToast } = useToast();
+  const { todos, addTodo, toggleTodo, deleteTodo, clearDone } = useTodos();
 
   // UI state
   const [filterYear, setFilterYear] = useState(
@@ -136,6 +138,15 @@ export default function HomePage() {
           }}
         />
       </main>
+
+      {/* To-Do drawer */}
+      <TodoPanel
+        todos={todos}
+        onAdd={addTodo}
+        onToggle={toggleTodo}
+        onDelete={deleteTodo}
+        onClearDone={clearDone}
+      />
 
       {/* Modals */}
       <SettingsModal
